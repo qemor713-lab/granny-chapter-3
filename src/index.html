@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Granny 3 - Web Edition</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="app-container">
+        <div id="main-menu" class="screen-overlay">
+            <h1 class="main-title">GRANNY 3</h1>
+            <h2>Welcome to the Granny Chapter 3</h2>
+            <h3>Not full release but it's small release</h3>
+            <div class="menu-navigation">
+                <button class="btn-ui" onclick="navigateTo('play-screen')">PLAY</button>
+                <button class="btn-ui" onclick="navigateTo('shop-screen')">SHOP</button>
+                <button class="btn-ui" onclick="navigateTo('points-screen')">YOUR POINT: <span id="point-display">0</span></button>
+                <button class="btn-ui" onclick="navigateTo('settings-screen')">SETTINGS</button>
+            </div>
+        </div>
+
+        <div id="play-screen" class="screen-overlay hidden">
+            <h2 class="sub-title">SELECT DIFFICULTY</h2>
+            <div class="menu-navigation">
+                <button class="btn-ui" onclick="startGame('practice')">PRACTICE</button>
+                <button class="btn-ui" onclick="startGame('easy')">EASY</button>
+                <button class="btn-ui" onclick="startGame('normal')">NORMAL</button>
+                <button class="btn-ui" onclick="startGame('hard')">HARD</button>
+                <button class="btn-ui" onclick="startGame('extreme')">EXTREME</button>
+                <button class="btn-ui" onclick="startGame('scary')">SCARY</button>
+                <button class="btn-ui" onclick="startGame('so-extreme')">SO EXTREME</button>
+            </div>
+            <button class="btn-ui back-style" onclick="navigateTo('main-menu')">BACK</button>
+        </div>
+
+        <div id="shop-screen" class="screen-overlay hidden">
+            <h2 class="sub-title">ITEM SHOP</h2>
+            <div class="message-container">
+                <p>No items available for purchase yet.</p>
+            </div>
+            <button class="btn-ui back-style" onclick="navigateTo('main-menu')">BACK</button>
+        </div>
+
+        <div id="points-screen" class="screen-overlay hidden">
+            <h2 class="sub-title">ACHIEVEMENTS</h2>
+            <div class="message-container">
+                <p>Total Points Collected:</p>
+                <h1 id="point-detail" style="color: gold; font-size: 3rem;">0</h1>
+            </div>
+            <button class="btn-ui back-style" onclick="navigateTo('main-menu')">BACK</button>
+        </div>
+
+        <div id="settings-screen" class="screen-overlay hidden">
+            <h2 class="sub-title">SETTINGS</h2>
+            <div class="message-container">
+                <p>System too powerful to be configured...</p>
+            </div>
+            <button class="btn-ui back-style" onclick="navigateTo('main-menu')">BACK</button>
+        </div>
+
+        <canvas id="game-canvas" class="hidden"></canvas>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

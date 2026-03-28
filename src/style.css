@@ -1,0 +1,114 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: #050505;
+    color: #ffffff;
+    font-family: 'Courier New', Courier, monospace;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+}
+
+#app-container {
+    position: relative;
+    width: 800px;
+    height: 600px;
+    border: 4px solid #1a1a1a;
+    background: #000;
+}
+
+.screen-overlay {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: radial-gradient(circle, #111 0%, #000 100%);
+    z-index: 5;
+}
+
+.hidden { display: none !important; }
+
+.main-title {
+    font-size: 4rem;
+    color: #8b0000;
+    letter-spacing: 10px;
+    margin-bottom: 20px;
+    text-shadow: 0 0 15px rgba(255, 0, 0, 0.7);
+}
+
+.sub-title { color: #555; margin-bottom: 15px; text-transform: uppercase; }
+
+.menu-navigation {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 350px;
+    overflow-y: auto;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+/* Hide scrollbar for Chrome/Safari */
+.menu-navigation::-webkit-scrollbar { width: 0px; }
+
+.btn-ui {
+    width: 320px;
+    padding: 12px;
+    background: transparent;
+    color: #ccc;
+    border: 1px solid #333;
+    font-size: 1.1rem;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: 0.2s;
+}
+
+.btn-ui:hover {
+    background: #8b0000;
+    color: #fff;
+    border-color: #ff0000;
+}
+
+.back-style {
+    margin-top: 15px;
+    border: 2px dashed #ff0000 !important;
+    color: #ff0000 !important;
+    font-weight: bold;
+    width: 250px;
+}
+
+.back-style:hover {
+    background: rgba(255, 0, 0, 0.2);
+}
+
+.message-container {
+    text-align: center;
+    padding: 20px;
+    border: 1px solid #222;
+    margin-bottom: 10px;
+}
+
+.secret-dev-note { display: block; margin-top: 10px; font-size: 0.7rem; color: #151515; }
+
+#game-canvas { display: block; background: #000; }
+
+h2 {
+  color: #ff0000;
+  font-weight: bold;
+  text-shadow: 0 0 40px;
+}
+
+h3 {
+  color: blue;
+  font-weight: bold;
+  text-shadow: 0 0 9px;
+}
