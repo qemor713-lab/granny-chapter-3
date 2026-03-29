@@ -4,12 +4,13 @@ const ctx = gameCanvas.getContext("2d");
 gameCanvas.width = 800;
 gameCanvas.height = 600;
 
-// Save System
+// Save System (Persistent Storage)
 let currentPoints = parseInt(localStorage.getItem('grannyPoints')) || 0;
 const updateUI = () => {
-    document.getElementById('point-display').innerText = currentPoints;
-    const detail = document.getElementById('point-detail');
-    if(detail) detail.innerText = currentPoints;
+    const pointDisplay = document.getElementById('point-display');
+    const pointDetail = document.getElementById('point-detail');
+    if (pointDisplay) pointDisplay.innerText = currentPoints;
+    if (pointDetail) pointDetail.innerText = currentPoints;
 };
 updateUI();
 
@@ -25,8 +26,16 @@ const escapeKey = { x: 0, y: 0, isCollected: false };
 
 const inputState = {};
 
+// --- INPUT HANDLERS ---
 window.addEventListener("keydown", (e) => inputState[e.key.toLowerCase()] = true);
 window.addEventListener("keyup", (e) => inputState[e.key.toLowerCase()] = false);
+
+// Reset all keys to prevent "auto-walking" bug after game over
+function clearInputState() {
+    Object.keys(inputState).forEach(key => {
+        inputState[key] = false;
+    });
+}
 
 // --- NAVIGATION SYSTEM ---
 function navigateTo(targetId) {
@@ -36,7 +45,7 @@ function navigateTo(targetId) {
     const target = document.getElementById(targetId);
     if (target) {
         target.classList.remove('hidden');
-        gameCanvas.classList.add('hidden'); // Hide canvas when in menu
+        gameCanvas.classList.add('hidden'); 
     }
     
     if (targetId === 'none') {
@@ -44,26 +53,33 @@ function navigateTo(targetId) {
     }
 }
 
-// --- RESET & RANDOMIZE ---
+// --- WORLD GENERATION ---
 function randomizeLocations() {
+    // Reset Entity Positions
     playerEntity.x = worldMap.width / 2;
     playerEntity.y = worldMap.height / 2;
     enemyEntity.x = 200;
     enemyEntity.y = 200;
 
+    // Reset Camera
+    gameCamera.x = playerEntity.x - gameCanvas.width / 2;
+    gameCamera.y = playerEntity.y - gameCanvas.height / 2;
+
+    // Randomize Door Location
     escapeDoor.x = Math.random() * (worldMap.width - 200);
     escapeDoor.y = Math.random() * (worldMap.height - 200);
 
-    let distance = 0;
-    while (distance < 1300) {
+    // Randomize Key (Ensure it's far from the door)
+    let spawnDistance = 0;
+    while (spawnDistance < 1300) {
         escapeKey.x = Math.random() * (worldMap.width - 100);
         escapeKey.y = Math.random() * (worldMap.height - 100);
-        distance = Math.hypot(escapeKey.x - escapeDoor.x, escapeKey.y - escapeDoor.y);
+        spawnDistance = Math.hypot(escapeKey.x - escapeDoor.x, escapeKey.y - escapeDoor.y);
     }
     escapeKey.isCollected = false;
 }
 
-// --- GAME ACTIONS ---
+// --- GAME CORE LOGIC ---
 function startGame(difficulty) {
     const speeds = {
         'practice': 0, 'easy': 2.5, 'normal': 3.8, 
@@ -71,6 +87,7 @@ function startGame(difficulty) {
     };
     enemyEntity.speed = speeds[difficulty];
     
+    clearInputState();
     randomizeLocations();
     navigateTo('none');
     isGameRunning = true;
@@ -79,28 +96,31 @@ function startGame(difficulty) {
 
 function handleGameOver(message) {
     isGameRunning = false;
+    clearInputState();
     alert(message);
-    navigateTo('main-menu'); // Return to menu instead of reloading
+    navigateTo('main-menu');
 }
 
 function update() {
     if (!isGameRunning) return;
 
-    // Movement
+    // Movement WASD
     if (inputState['w'] && playerEntity.y > 0) playerEntity.y -= playerEntity.speed;
     if (inputState['s'] && playerEntity.y < worldMap.height - playerEntity.size) playerEntity.y += playerEntity.speed;
     if (inputState['a'] && playerEntity.x > 0) playerEntity.x -= playerEntity.speed;
     if (inputState['d'] && playerEntity.x < worldMap.width - playerEntity.size) playerEntity.x += playerEntity.speed;
 
-    // Camera follow
+    // Camera follow player
     gameCamera.x = Math.max(0, Math.min(playerEntity.x - gameCanvas.width / 2, worldMap.width - gameCanvas.width));
     gameCamera.y = Math.max(0, Math.min(playerEntity.y - gameCanvas.height / 2, worldMap.height - gameCanvas.height));
 
-    // Interaction checks
+    // Key Collection
     if (Math.hypot(playerEntity.x - escapeKey.x, playerEntity.y - escapeKey.y) < 50 && !escapeKey.isCollected) {
         escapeKey.isCollected = true;
+        alert("EXIT KEY FOUND!");
     }
 
+    // Door Interaction (Press E)
     if (Math.hypot(playerEntity.x - escapeDoor.x, playerEntity.y - escapeDoor.y) < 110 && inputState['e']) {
         if (escapeKey.isCollected) {
             currentPoints++;
@@ -110,20 +130,22 @@ function update() {
         }
     }
 
-    // AI Tracking
+    // AI Chasing
     let distToEnemy = Math.hypot(playerEntity.x - enemyEntity.x, playerEntity.y - enemyEntity.y);
     if (distToEnemy > 0 && enemyEntity.speed > 0) {
         enemyEntity.x += ((playerEntity.x - enemyEntity.x) / distToEnemy) * enemyEntity.speed;
         enemyEntity.y += ((playerEntity.y - enemyEntity.y) / distToEnemy) * enemyEntity.speed;
     }
 
-    // Death Check
+    // Death Detection
     if (distToEnemy < playerEntity.size) {
         handleGameOver("GAME OVER! CAUGHT BY GRANNY.");
     }
 }
 
+// --- RENDERING ---
 function renderHUD() {
+    // UI Text only (No Radar Map)
     ctx.fillStyle = "white";
     ctx.font = "bold 18px Courier New";
     ctx.fillText("KEY STATUS: " + (escapeKey.isCollected ? "READY" : "MISSING"), 20, 40);
@@ -136,26 +158,35 @@ function draw() {
     ctx.save();
     ctx.translate(-gameCamera.x, -gameCamera.y);
 
-    // Grid lines
+    // Render Dark Floor
     ctx.fillStyle = "#0a0a0a";
     ctx.fillRect(0, 0, worldMap.width, worldMap.height);
+
+    // Render Map Grid Lines
     ctx.strokeStyle = "#1a1a1a";
-    for(let i=0; i<=worldMap.width; i+=200) {
-        ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,worldMap.height); ctx.stroke();
+    ctx.lineWidth = 1;
+    for(let i = 0; i <= worldMap.width; i += 200) {
+        ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, worldMap.height); ctx.stroke();
     }
-    for(let j=0; j<=worldMap.height; j+=200) {
-        ctx.beginPath(); ctx.moveTo(0,j); ctx.lineTo(worldMap.width,j); ctx.stroke();
+    for(let j = 0; j <= worldMap.height; j += 200) {
+        ctx.beginPath(); ctx.moveTo(0, j); ctx.lineTo(worldMap.width, j); ctx.stroke();
     }
 
-    // Render Assets
+    // Render Door
     ctx.fillStyle = escapeKey.isCollected ? "#00ff00" : "#331a00";
     ctx.fillRect(escapeDoor.x, escapeDoor.y, escapeDoor.size, escapeDoor.size);
+    
+    // Render Key (If not collected)
     if (!escapeKey.isCollected) {
         ctx.fillStyle = "gold";
         ctx.beginPath(); ctx.arc(escapeKey.x, escapeKey.y, 15, 0, Math.PI*2); ctx.fill();
     }
+    
+    // Render Player
     ctx.fillStyle = playerEntity.color;
     ctx.fillRect(playerEntity.x, playerEntity.y, playerEntity.size, playerEntity.size);
+    
+    // Render Granny
     ctx.fillStyle = enemyEntity.color;
     ctx.beginPath(); ctx.arc(enemyEntity.x + 15, enemyEntity.y + 15, 15, 0, Math.PI*2); ctx.fill();
 
